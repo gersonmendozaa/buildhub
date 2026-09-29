@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}{{ vendor.business_name }} · BuildHub{% endblock %}
+{% block content %}
+<section class="profile-header">
+  <div class="shell">
+    <a class="back-link" href="{% url 'vendor-list' %}">← Back to vendors</a>
+    <div class="profile-grid">
+      <div>
+        <div class="chip-row">
+          {% for category in vendor.categories.all %}<span class="chip chip-dark">{{ category.name }}</span>{% endfor %}
+        </div>
+        <h1>{{ vendor.business_name }}</h1>
+        <p class="profile-description">{{ vendor.description|default:"No company description has been added yet." }}</p>
+        <p class="service-line"><strong>Serves:</strong> {% for county in vendor.service_counties.all %}{{ county.name }} County{% if not forloop.last %}, {% endif %}{% empty %}Service area not listed{% endfor %}</p>
+      </div>
+      <aside class="trust-card" aria-label="Vendor verification summary">
+        {% if vendor.license_state == "verified" %}<span class="badge badge-verified"><i aria-hidden="true">✓</i> Verified license</span>{% endif %}
+        <div class="score-large"><strong>{{ vendor.score }}</strong><span>BuildHub score / 100</span></div>
+        <hr>
+        <div class="trust-row"><span>License</span><strong>#{{ vendor.license_number }}</strong></div>
+        <div class="trust-row"><span>Status</span><strong>{% if vendor.license_state == "verified" %}<span class="verified-inline"><i aria-hidden="true">✓</i> {{ vendor.get_license_state_display }}</span>{% else %}{{ vendor.get_license_state_display }}{% endif %}</strong></div>
+        <div class="trust-row"><span>Classifications</span><strong>{{ vendor.license_classifications|default:"Not listed" }}</strong></div>
+        {% if vendor.license_checked_at %}<p class="fine-print">Demo check recorded {{ vendor.license_checked_at|date:"M j, Y" }}. Production will link to the official CSLB record.</p>{% endif %}
+      </aside>
+    </div>
+  </div>
+</section>
+
+<section class="shell page-section">
+  <div class="section-heading"><div><p class="eyebrow">Confirmed work</p><h2>Project portfolio</h2></div></div>
+  <div class="project-grid">
+    {% for project in projects %}
+      <article class="project-card">
+        <div class="project-comparison">
+          <div class="comparison-panel">
+            <span class="comparison-label">Before</span>
+            {% for media in project.media.all %}{% if media.review_status == "ready" and media.kind == "before" %}<img src="{% url 'project-media-file' media.pk %}" alt="{{ media.alt_text|default:'Project before construction' }}">{% endif %}{% empty %}<span class="project-fallback" aria-hidden="true">{{ project.category.name|slice:":1" }}</span>{% endfor %}
+          </div>
+          <div class="comparison-panel">
+            <span class="comparison-label comparison-label-after">After</span>
+            {% for media in project.media.all %}{% if media.review_status == "ready" and media.kind == "after" %}<img src="{% url 'project-media-file' media.pk %}" alt="{{ media.alt_text|default:'Completed construction project' }}">{% endif %}{% empty %}<span class="project-fallback" aria-hidden="true">{{ project.category.name|slice:":1" }}</span>{% endfor %}
+          </div>
+        </div>
+        <div class="project-body">
+          <span class="badge badge-confirmed"><i aria-hidden="true">✓</i> Verified by homeowner</span>
+          <h3>{{ project.title }}</h3>
+          <p>{{ project.description }}</p>
+          <div class="card-meta"><span>{{ project.city }}, {{ project.county.name }}</span><span>Completed {{ project.completed_on|date:"M Y" }}</span></div>
+        </div>
+      </article>
+    {% empty %}
+      <div class="empty-state"><h3>No confirmed work yet</h3><p>This vendor has not published a homeowner-confirmed project.</p></div>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

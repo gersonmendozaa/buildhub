@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Homeowner dashboard · BuildHub{% endblock %}
+{% block content %}
+<section class="shell page-section">
+  <div class="dashboard-heading"><div><p class="eyebrow">Homeowner workspace</p><h1>Project confirmations</h1><p class="muted">Only confirm work that this company completed for you.</p></div></div>
+  <div class="verification-list">
+    {% for project in pending_projects %}
+      <article class="verification-card">
+        <div><span class="badge badge-pending">Needs your review</span><h2>{{ project.title }}</h2><p>{{ project.vendor.business_name }} · {{ project.city }}, {{ project.county.name }}</p></div>
+        <a class="button" href="{% url 'project-verify' project.pk %}">Review project</a>
+      </article>
+    {% empty %}<div class="empty-state"><h2>Nothing needs your review</h2><p>When a vendor asks you to confirm completed work, it will appear here.</p></div>{% endfor %}
+  </div>
+  {% if completed_projects %}
+    <div class="table-card space-top"><div class="table-header"><h2>Past decisions</h2></div><div class="responsive-table"><table><thead><tr><th>Project</th><th>Vendor</th><th>Decision</th></tr></thead><tbody>{% for project in completed_projects %}<tr><td>{{ project.title }}</td><td>{{ project.vendor.business_name }}</td><td><span class="status status-{{ project.status }}">{{ project.get_status_display }}</span></td></tr>{% endfor %}</tbody></table></div></div>
+  {% endif %}
+</section>
+{% endblock %}

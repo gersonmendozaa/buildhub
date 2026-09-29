@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Vendor dashboard · BuildHub{% endblock %}
+{% block content %}
+<section class="shell page-section">
+  <div class="dashboard-heading">
+    <div><p class="eyebrow">Vendor workspace</p><h1>{% if profile %}{{ profile.business_name }}{% else %}Set up your company{% endif %}</h1></div>
+    <div class="action-row">
+      <a class="button button-secondary" href="{% url 'vendor-profile-edit' %}">{% if profile %}Edit profile{% else %}Create profile{% endif %}</a>
+      {% if profile %}<a class="button" href="{% url 'project-create' %}">Add completed work</a>{% endif %}
+    </div>
+  </div>
+  {% if profile %}
+    <div class="metric-grid">
+      <div class="metric"><span>Profile</span><strong>{% if profile.is_published %}Published{% else %}Draft{% endif %}</strong></div>
+      <div class="metric"><span>License</span><strong>{{ profile.get_license_state_display }}</strong></div>
+      <div class="metric"><span>Score</span><strong>{{ profile.score }} / 100</strong></div>
+      <div class="metric"><span>Projects</span><strong>{{ projects|length }}</strong></div>
+    </div>
+    <div class="table-card">
+      <div class="table-header"><h2>Projects</h2><span>Homeowner confirmation is required before publication.</span></div>
+      <div class="responsive-table">
+        <table>
+          <thead><tr><th>Project</th><th>Location</th><th>Completed</th><th>Status</th><th>Photos</th></tr></thead>
+          <tbody>
+          {% for project in projects %}
+            <tr><td><strong>{{ project.title }}</strong><small>{{ project.category.name }} · v{{ project.material_version }}</small></td><td>{{ project.city }}, {{ project.county.name }}</td><td>{{ project.completed_on|date:"M j, Y" }}</td><td><span class="status status-{{ project.status }}">{{ project.get_status_display }}</span></td><td><a class="text-link table-link" href="{% url 'project-media-manage' project.pk %}">Manage photos</a></td></tr>
+          {% empty %}<tr><td colspan="5">No projects yet. Add completed work to begin verification.</td></tr>{% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  {% else %}
+    <div class="empty-state prominent"><h2>Build your vendor profile</h2><p>Add your CSLB license number, trades, and Bay Area service counties before sharing completed work.</p><a class="button" href="{% url 'vendor-profile-edit' %}">Create vendor profile</a></div>
+  {% endif %}
+</section>
+{% endblock %}

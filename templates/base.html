@@ -1,0 +1,53 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Find verified Bay Area construction professionals and homeowner-confirmed work.">
+  <title>{% block title %}BuildHub{% endblock %}</title>
+  <link rel="icon" type="image/png" href="{% static 'img/buildhub-icon.png' %}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header">
+    <nav class="nav shell" aria-label="Primary navigation">
+      <a class="brand" href="{% url 'vendor-list' %}" aria-label="BuildHub home">
+        <img src="{% static 'img/buildhub-logo.png' %}" alt="BuildHub" width="581" height="168">
+      </a>
+      <div class="nav-links">
+        <a href="{% url 'vendor-list' %}">Find vendors</a>
+        {% if user.is_authenticated %}
+          <a href="{% url 'dashboard' %}">Dashboard</a>
+          <form method="post" action="{% url 'logout' %}">
+            {% csrf_token %}
+            <button class="link-button" type="submit">Sign out</button>
+          </form>
+        {% else %}
+          <a href="{% url 'login' %}">Sign in</a>
+          <a class="button button-small" href="{% url 'register' %}">Create account</a>
+        {% endif %}
+      </div>
+    </nav>
+  </header>
+
+  {% if messages %}
+    <div class="shell alerts" aria-live="polite">
+      {% for message in messages %}<div class="alert alert-{{ message.tags|default:'info' }}">{{ message }}</div>{% endfor %}
+    </div>
+  {% endif %}
+
+  <main id="main">{% block content %}{% endblock %}</main>
+
+  <footer class="site-footer">
+    <div class="shell footer-inner">
+      <div class="footer-brand"><img src="{% static 'img/buildhub-logo.png' %}" alt="BuildHub" width="581" height="168"><span>Proof behind every project.</span></div>
+      <span>License data shown here is demo data, not a live CSLB check.</span>
+    </div>
+  </footer>
+</body>
+</html>

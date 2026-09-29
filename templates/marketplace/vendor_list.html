@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}Find verified Bay Area contractors · BuildHub{% endblock %}
+{% block content %}
+<section class="search-band">
+  <div class="shell search-layout">
+    <div class="search-intro">
+      <p class="eyebrow eyebrow-light">License-verified Bay Area contractors</p>
+      <h1>Hire with proof, not promises.</h1>
+      <p>Compare verified licenses and real work confirmed by local homeowners—so you can choose your contractor with confidence.</p>
+      <div class="trust-points" aria-label="BuildHub trust signals">
+        <span><i aria-hidden="true">✓</i> License status checked</span>
+        <span><i aria-hidden="true">✓</i> Work confirmed by homeowners</span>
+      </div>
+    </div>
+    <form class="search-panel" method="get" aria-label="Filter construction vendors">
+      <div class="search-primary">
+        <label for="q">Search</label>
+        <input id="q" name="q" type="search" value="{{ filters.q }}" placeholder="Company, trade, or license class">
+      </div>
+      <div class="filter-grid">
+        <div class="field compact">
+          <label for="category">Category</label>
+          <select id="category" name="category">
+            <option value="">All categories</option>
+            {% for item in categories %}<option value="{{ item.slug }}" {% if filters.category == item.slug %}selected{% endif %}>{{ item.name }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="field compact">
+          <label for="county">County</label>
+          <select id="county" name="county">
+            <option value="">All launch counties</option>
+            {% for item in counties %}<option value="{{ item.slug }}" {% if filters.county == item.slug %}selected{% endif %}>{{ item.name }}</option>{% endfor %}
+          </select>
+        </div>
+      </div>
+      <label class="check-row"><input type="checkbox" name="verified" value="1" {% if filters.verified %}checked{% endif %}> CSLB-verified only</label>
+      <button class="button button-block" type="submit">Find trusted contractors</button>
+    </form>
+  </div>
+</section>
+
+<section class="shell page-section">
+  <div class="section-heading">
+    <div><p class="eyebrow">Trusted local pros</p><h2>Contractors with proof</h2></div>
+    <p class="result-count">{{ vendors|length }} result{{ vendors|length|pluralize }}</p>
+  </div>
+  <div class="vendor-grid">
+    {% for vendor in vendors %}
+      <article class="vendor-card">
+        <div class="vendor-card-visual">
+          {% with project=vendor.showcase_projects.0 %}
+            {% if project and project.showcase_media.0 %}
+              <img src="{% url 'project-media-file' project.showcase_media.0.pk %}" alt="{{ project.showcase_media.0.alt_text|default:'Completed construction project' }}">
+              <span class="photo-proof"><i aria-hidden="true">✓</i> Homeowner confirmed</span>
+            {% else %}
+              <div class="vendor-avatar" aria-hidden="true">{{ vendor.business_name|slice:':1' }}</div>
+              <span class="photo-proof neutral-proof">Portfolio coming soon</span>
+            {% endif %}
+          {% endwith %}
+        </div>
+        <div class="vendor-card-body">
+        <div class="card-topline">
+          {% if vendor.license_state == "verified" %}<span class="badge badge-verified"><i aria-hidden="true">✓</i> Verified license</span>{% else %}<span class="badge">License {{ vendor.get_license_state_display|lower }}</span>{% endif %}
+          <span class="score" aria-label="BuildHub score {{ vendor.score }} out of 100"><strong>{{ vendor.score }}</strong><small>/100 score</small></span>
+        </div>
+        <h3><a href="{{ vendor.get_absolute_url }}">{{ vendor.business_name }}</a></h3>
+        <p class="vendor-copy">{{ vendor.description|default:"Profile details coming soon."|truncatewords:24 }}</p>
+        <div class="chip-row">
+          {% for category in vendor.categories.all|slice:":3" %}<span class="chip">{{ category.name }}</span>{% endfor %}
+        </div>
+        <div class="card-meta">
+          <span>{{ vendor.verified_project_count }} confirmed project{{ vendor.verified_project_count|pluralize }}</span>
+          <span>{% for county in vendor.service_counties.all %}{{ county.name }}{% if not forloop.last %}, {% endif %}{% endfor %}</span>
+        </div>
+        <a class="text-link" href="{{ vendor.get_absolute_url }}">See verified work <span aria-hidden="true">→</span></a>
+        </div>
+      </article>
+    {% empty %}
+      <div class="empty-state">
+        <h3>No vendors match those filters</h3>
+        <p>Try a different county, category, or broader search phrase.</p>
+        <a class="button button-secondary" href="{% url 'vendor-list' %}">Clear filters</a>
+      </div>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

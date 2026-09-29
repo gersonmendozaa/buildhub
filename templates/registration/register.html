@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Create account · BuildHub{% endblock %}
+{% block content %}
+<section class="shell narrow page-section">
+  <div class="form-card">
+    <p class="eyebrow">Join the marketplace</p>
+    <h1>Create your account</h1>
+    <p class="muted">Choose the account type that matches how you will use BuildHub.</p>
+    <form method="post" class="stack-form">
+      {% csrf_token %}
+      {{ form.non_field_errors }}
+      {% for field in form %}
+        <div class="field">
+          <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+          {{ field }}
+          {% if field.help_text %}<div class="help-text">{{ field.help_text|safe }}</div>{% endif %}
+          {% for error in field.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+        </div>
+      {% endfor %}
+      <button class="button button-block" type="submit">Create account</button>
+    </form>
+    <p class="form-foot">Already registered? <a href="{% url 'login' %}">Sign in</a></p>
+  </div>
+</section>
+{% endblock %}

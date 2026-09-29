@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Project photos · BuildHub{% endblock %}
+{% block content %}
+<section class="shell page-section">
+  <a class="back-link dark-link" href="{% url 'dashboard' %}">← Back to dashboard</a>
+  <div class="dashboard-heading media-heading">
+    <div>
+      <p class="eyebrow">Project evidence</p>
+      <h1>{{ project.title }}</h1>
+      <p class="muted">Add clear before and after images. Uploading or deleting an image creates a new project version and requires homeowner confirmation again.</p>
+    </div>
+    <span class="version-label">Version {{ project.material_version }}</span>
+  </div>
+
+  <div class="media-workspace">
+    <aside class="form-card media-upload-card">
+      <h2>Upload images</h2>
+      <p class="muted">Images are re-encoded to remove metadata. Claude provides an advisory content check; flagged images require human review.</p>
+      <form method="post" enctype="multipart/form-data" class="stack-form">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+        {% for field in form %}
+          <div class="field">
+            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            {% if field.help_text %}<div class="help-text">{{ field.help_text }}</div>{% endif %}
+            {% for error in field.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+          </div>
+        {% endfor %}
+        <button class="button button-block" type="submit">Upload and analyze</button>
+      </form>
+    </aside>
+
+    <div class="media-library">
+      <div class="section-heading compact-heading"><div><p class="eyebrow">Evidence</p><h2>Before and after</h2></div><span>{{ project.media.all|length }} / 20 images</span></div>
+      <div class="media-grid">
+        {% for media in project.media.all %}
+          <article class="media-card">
+            {% if media.processed_file %}
+              <img src="{% url 'project-media-file' media.pk %}" alt="{{ media.alt_text|default:'Project evidence image' }}">
+            {% else %}
+              <div class="media-placeholder">Processing unavailable</div>
+            {% endif %}
+            <div class="media-card-body">
+              <div class="card-topline">
+                <span class="badge">{{ media.get_kind_display }}</span>
+                <span class="status status-{{ media.review_status }}">{{ media.get_review_status_display }}</span>
+              </div>
+              <p class="media-filename">{{ media.original_name }}</p>
+              <p class="media-analysis">Claude: {{ media.get_llm_status_display }}{% if media.review_note %} · {{ media.review_note|truncatewords:16 }}{% endif %}</p>
+              <form method="post" action="{% url 'project-media-delete' project.pk media.pk %}">
+                {% csrf_token %}<button class="danger-link" type="submit">Remove image</button>
+              </form>
+            </div>
+          </article>
+        {% empty %}
+          <div class="empty-state"><h3>No project images yet</h3><p>Upload at least one before image and one after image.</p></div>
+        {% endfor %}
+      </div>
+      <div class="submit-verification-card">
+        <div><h2>Ready for homeowner review?</h2><p>The project needs at least one approved image of each type and no unresolved review flags.</p></div>
+        <form method="post" action="{% url 'project-submit-verification' project.pk %}">{% csrf_token %}<button class="button" type="submit">Submit for confirmation</button></form>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

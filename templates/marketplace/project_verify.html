@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Review {{ project.title }} · BuildHub{% endblock %}
+{% block content %}
+<section class="shell narrow-wide page-section">
+  <a class="back-link dark-link" href="{% url 'dashboard' %}">← Back to confirmations</a>
+  <div class="review-layout">
+    <article class="project-review">
+      <p class="eyebrow">Project submitted by {{ project.vendor.business_name }}</p>
+      <h1>{{ project.title }}</h1>
+      <dl class="detail-list"><div><dt>Category</dt><dd>{{ project.category.name }}</dd></div><div><dt>Location</dt><dd>{{ project.city }}, {{ project.county.name }}</dd></div><div><dt>Dates</dt><dd>{{ project.started_on|date:"M j, Y" }} – {{ project.completed_on|date:"M j, Y" }}</dd></div></dl>
+      <div class="scope-copy"><h2>Work description</h2><p>{{ project.description }}</p></div>
+      <div class="review-media-section">
+        <div class="evidence-heading"><h2>Before and after evidence</h2><span class="badge badge-confirmed"><i aria-hidden="true">✓</i> Ready for your review</span></div>
+        <div class="review-media-grid">
+          {% for media in project.media.all %}
+            {% if media.review_status == "ready" %}<figure><img src="{% url 'project-media-file' media.pk %}" alt="{{ media.alt_text|default:'Project evidence image' }}"><figcaption>{{ media.get_kind_display }}</figcaption></figure>{% endif %}
+          {% empty %}<p class="muted">No images were attached to this legacy project.</p>{% endfor %}
+        </div>
+      </div>
+    </article>
+    <aside class="decision-card">
+      <h2>Is this accurate?</h2><p>Your confirmation allows this project to appear publicly and count toward the vendor's record. Your identity and email stay private.</p>
+      <form method="post" class="stack-form">{% csrf_token %}{{ form.project_version }}{% for error in form.project_version.errors %}<p class="field-error">{{ error }}</p>{% endfor %}{{ form.non_field_errors }}{% for field in form.visible_fields %}<div class="field"><label>{{ field.label }}</label>{{ field }}{% for error in field.errors %}<p class="field-error">{{ error }}</p>{% endfor %}</div>{% endfor %}<button class="button button-block" type="submit">Record my decision</button></form>
+    </aside>
+  </div>
+</section>
+{% endblock %}
